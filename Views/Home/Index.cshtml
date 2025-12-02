@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<section>
+    <h2>@ViewData["Message"]</h2>
+    <p>This MVC shell fronts the mock dish catalog and ordering APIs for MVP validation.</p>
+    <ol>
+        <li>Use <code>GET /api/dishes</code> to render the live menu.</li>
+        <li>Call <code>GET /api/dishes/{id}</code> to populate detail modals.</li>
+        <li>Submit <code>POST /api/orders</code> with dish selections and a customer name to receive a generated order id.</li>
+    </ol>
+    <p>
+        Explore and test every operation via <a href="/swagger" target="_blank">Swagger UI</a>.
+    </p>
+</section>

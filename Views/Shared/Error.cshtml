@@ -1,0 +1,9 @@
+@{
+    ViewData["Title"] = "Error";
+}
+
+<section>
+    <h2>Something went wrong.</h2>
+    <p>The request identifier is <strong>@ViewContext?.HttpContext?.TraceIdentifier</strong>.</p>
+    <p>Return to the <a asp-controller="Home" asp-action="Index">dashboard</a> or refresh your request.</p>
+</section>
