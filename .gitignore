@@ -1,0 +1,35 @@
+## Build artifacts
+bin/
+obj/
+
+## User-specific files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.pidb
+*.svclog
+*.sln.docstates
+
+## Visual Studio Code
+.vscode/
+.history/
+
+## Logs
+*.log
+
+bin/
+obj/
+
+## NuGet
+*.nupkg
+packages/
+.nuget/
+
+## IIS Express
+/.vs/
+ApplicationInsights.config
+
+## Rider / ReSharper
+.idea/
+*.DotSettings.user
