@@ -2,6 +2,20 @@ using BTL_SAD.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+// ADD CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReact",
+        policy =>
+        {
+            policy
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+                .WithOrigins("http://localhost:3000");
+        });
+});
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddEndpointsApiExplorer();
@@ -9,6 +23,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IMenuService, MenuService>();
 
 var app = builder.Build();
+
+
+// USE CORS 
+app.UseCors("AllowReact");
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
