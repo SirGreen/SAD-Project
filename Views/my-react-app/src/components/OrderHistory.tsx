@@ -17,6 +17,7 @@ interface Order {
   items: OrderItem[];
   total: number;
   date: string;
+  notes?: string; // Add notes field
 }
 
 interface OrderHistoryProps {
@@ -126,6 +127,14 @@ export function OrderHistory({ onBack }: OrderHistoryProps) {
                       <Calendar className="w-4 h-4" />
                       <span>{formatDate(selectedOrder.date)}</span>
                     </div>
+                    {selectedOrder.notes && (
+                      <div className="mt-3 pt-3 border-t border-gray-700">
+                        <div className="text-sm text-gray-400 mb-1">📝 Notes:</div>
+                        <div className="text-gray-300 bg-[#1a1a1a] p-3 rounded-lg">
+                          {selectedOrder.notes}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-4 mb-4">

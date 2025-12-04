@@ -4,6 +4,7 @@ import { CheckoutModal } from './CheckoutModal';
 import { DishDetailModal } from './DishDetailModal';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { SuccessModal } from './SuccessModal';
+import { NotesModal } from './NotesModal';
 
 interface MenuItem {
   id: string;
@@ -80,6 +81,8 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastOrder, setLastOrder] = useState<{ customerName: string, orderId: string, total: number }>({ customerName: '', orderId: '', total: 0 });
+  const [showNotes, setShowNotes] = useState(false);
+  const [notes, setNotes] = useState('');
 
   const addToCart = (item: MenuItem) => {
     setCart((prev) => {
@@ -104,29 +107,64 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const handleConfirmOrder = (name: string) => {
-    // Save order to history
-    const orderId = '#' + Date.now().toString().slice(-4);
-    const order = {
-      id: Date.now().toString(),
-      customerName: name,
-      items: cart,
-      total: total,
-      date: new Date().toISOString(),
-    };
-    
-    const history = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-    localStorage.setItem('orderHistory', JSON.stringify([order, ...history]));
-    
-    // Show success modal
-    setLastOrder({ customerName: name, orderId: orderId, total: total });
-    setShowCheckout(false);
-    setShowSuccess(true);
-    
-    // Reset cart
-    setCart([]);
-    setCustomerName('');
+  const handleConfirmOrder = async (name: string) => {
+    try {
+      const orderRequest = {
+        customerName: name,
+        dishIds: cart.map(i => Number(i.id)), 
+        note: notes || null                 
+      };
+
+      console.log("Sending order request:", orderRequest);
+
+      const res = await fetch("http://localhost:5281/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(orderRequest)
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("Backend error:", errText);
+        throw new Error("Create order failed");
+      }
+
+      const data = await res.json();
+      console.log("Backend order response:", data);
+
+      const order = {
+        id: data.orderId,
+        customerName: name,
+        items: cart,
+        total: total,
+        date: new Date().toISOString(),
+        notes: notes,
+      };
+
+      const history = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+      localStorage.setItem('orderHistory', JSON.stringify([order, ...history]));
+
+      setLastOrder({
+        customerName: name,
+        orderId: data.orderId,
+        total: total
+      });
+
+      setShowCheckout(false);
+      setShowSuccess(true);
+
+      setCart([]);
+      setCustomerName('');
+      setNotes('');
+
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Checkout failed! Please try again.");
+    }
   };
+
 
   // Filter menu items by selected category
   const filteredMenuItems = menuItems.filter((item) => {
@@ -346,7 +384,10 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
                 <div className="w-7 h-7 flex items-center justify-center text-base">%</div>
                 <span>Discount</span>
               </button>
-              <button className="bg-[#3a3a3a] p-3 rounded-lg flex flex-col items-center gap-1 text-xs hover:bg-[#4a4a4a]">
+              <button
+                onClick={() => setShowNotes(true)}
+                className="bg-[#3a3a3a] p-3 rounded-lg flex flex-col items-center gap-1 text-xs hover:bg-[#4a4a4a]"
+              >
                 <div className="w-7 h-7 flex items-center justify-center text-base">📝</div>
                 <span>Notes</span>
               </button>
@@ -401,6 +442,16 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
           orderId={lastOrder.orderId}
           total={lastOrder.total}
           onClose={() => setShowSuccess(false)}
+        />
+      )}
+
+      {/* Notes Modal */}
+      {showNotes && (
+        <NotesModal
+          isOpen={showNotes}
+          notes={notes}
+          onSave={setNotes}
+          onClose={() => setShowNotes(false)}
         />
       )}
     </div>
