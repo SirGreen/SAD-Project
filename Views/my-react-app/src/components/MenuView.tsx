@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, Clock, Search, Phone, ShoppingCart, Receipt, User, Minus, Plus, List } from 'lucide-react';
 import { CheckoutModal } from './CheckoutModal';
 import { DishDetailModal } from './DishDetailModal';
@@ -29,44 +29,29 @@ const categories = [
   { id: 'icecream', name: 'Ice Cream', color: 'bg-[#b4f4d9]' },
 ];
 
-const menuItems: MenuItem[] = [
-  { id: '1', name: 'Cheese Pizza', price: 320, image: 'pizza', category: 'pizza' },
-  { id: '2', name: 'Hamburger', price: 320, image: 'burger', category: 'burger' },
-  { id: '3', name: 'Chicken Wings', price: 320, image: 'wings', category: 'wings' },
-  { id: '4', name: 'Salad', price: 320, image: 'salad', category: 'salads' },
-  { id: '5', name: 'Cheeseburger', price: 350, image: 'burger', category: 'burger' },
-  { id: '6', name: 'Pepperoni Pizza', price: 380, image: 'pizza', category: 'pizza' },
-  { id: '7', name: 'Veggie Pizza', price: 340, image: 'pizza', category: 'pizza' },
-  { id: '8', name: 'BBQ Wings', price: 280, image: 'wings', category: 'wings' },
-  { id: '9', name: 'Margherita Pizza', price: 300, image: 'pizza', category: 'pizza' },
-  { id: '10', name: 'Caesar Salad', price: 250, image: 'salad', category: 'salads' },
-  { id: '11', name: 'Double Burger', price: 420, image: 'burger', category: 'burger' },
-  { id: '12', name: 'Buffalo Wings', price: 300, image: 'wings', category: 'wings' },
-  { id: '13', name: 'Hawaiian Pizza', price: 360, image: 'pizza', category: 'pizza' },
-  { id: '14', name: 'Bacon Burger', price: 380, image: 'burger', category: 'burger' },
-  { id: '15', name: 'Greek Salad', price: 270, image: 'salad', category: 'salads' },
-  { id: '16', name: 'Garlic Wings', price: 290, image: 'wings', category: 'wings' },
-  { id: '17', name: 'Meat Lover Pizza', price: 450, image: 'pizza', category: 'pizza' },
-  { id: '18', name: 'Veggie Burger', price: 310, image: 'burger', category: 'burger' },
-  { id: '19', name: 'Spicy Wings', price: 310, image: 'wings', category: 'wings' },
-  { id: '20', name: 'Garden Salad', price: 240, image: 'salad', category: 'salads' },
-  { id: '21', name: 'Supreme Pizza', price: 480, image: 'pizza', category: 'pizza' },
-  { id: '22', name: 'Chicken Burger', price: 340, image: 'burger', category: 'burger' },
-  { id: '23', name: 'Honey Mustard Wings', price: 320, image: 'wings', category: 'wings' },
-  { id: '24', name: 'Cobb Salad', price: 290, image: 'salad', category: 'salads' },
-  { id: '25', name: 'Four Cheese Pizza', price: 410, image: 'pizza', category: 'pizza' },
-  { id: '26', name: 'Fish Burger', price: 360, image: 'burger', category: 'burger' },
-  { id: '27', name: 'Teriyaki Wings', price: 330, image: 'wings', category: 'wings' },
-  { id: '28', name: 'Caprese Salad', price: 280, image: 'salad', category: 'salads' },
-  { id: '29', name: 'Seafood Pizza', price: 490, image: 'pizza', category: 'pizza' },
-  { id: '30', name: 'Mushroom Burger', price: 330, image: 'burger', category: 'burger' },
-  { id: '31', name: 'Lemon Pepper Wings', price: 300, image: 'wings', category: 'wings' },
-  { id: '32', name: 'Spinach Salad', price: 260, image: 'salad', category: 'salads' },
-  { id: '33', name: 'White Pizza', price: 370, image: 'pizza', category: 'pizza' },
-  { id: '34', name: 'Pulled Pork Burger', price: 390, image: 'burger', category: 'burger' },
-  { id: '35', name: 'Thai Chili Wings', price: 340, image: 'wings', category: 'wings' },
-  { id: '36', name: 'Taco Salad', price: 310, image: 'salad', category: 'salads' },
-];
+const getCategoryFromName = (dishName: string): string => {
+  const lowerName = dishName.toLowerCase();
+  if (lowerName.includes('pizza')) return 'pizza';
+  if (lowerName.includes('burger')) return 'burger';
+  if (lowerName.includes('wing')) return 'wings';
+  if (lowerName.includes('salad') || lowerName.includes('kale')) return 'salads';
+  if (lowerName.includes('fries') || lowerName.includes('fry') || lowerName.includes('potato')) return 'fries';
+  if (lowerName.includes('drink') || lowerName.includes('juice') || lowerName.includes('soda')) return 'beverages';
+  if (lowerName.includes('sandwich') || lowerName.includes('wrap') || lowerName.includes('banh mi') || lowerName.includes('slider')) return 'sandwiches';
+  if (lowerName.includes('ice cream') || lowerName.includes('cake') || lowerName.includes('dessert')) return 'icecream';
+  if (lowerName.includes('bowl') || lowerName.includes('rice') || lowerName.includes('ramen')) return 'pizza';
+  if (lowerName.includes('steak') || lowerName.includes('chicken') || lowerName.includes('shrimp') || lowerName.includes('cod') || lowerName.includes('brisket')) return 'burger';
+  return 'pizza';
+};
+
+const getImageType = (dishName: string): string => {
+  const lowerName = dishName.toLowerCase();
+  if (lowerName.includes('wing')) return 'wings';
+  if (lowerName.includes('salad') || lowerName.includes('kale')) return 'salad';
+  if (lowerName.includes('burger') || lowerName.includes('steak') || lowerName.includes('chicken')) return 'burger';
+  if (lowerName.includes('pizza')) return 'pizza';
+  return 'pizza';
+};
 
 interface MenuViewProps {
   onViewHistory: () => void;
@@ -83,6 +68,40 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
   const [lastOrder, setLastOrder] = useState<{ customerName: string, orderId: string, total: number }>({ customerName: '', orderId: '', total: 0 });
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState('');
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDishes = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:5281/api/Dishes');
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch dishes');
+        }
+
+        const dishes = await response.json();
+
+        const transformedDishes: MenuItem[] = dishes.map((dish: any) => ({
+          id: dish.id.toString(),
+          name: dish.name,
+          price: dish.price,
+          category: getCategoryFromName(dish.name),
+          image: dish.imageUrl || getImageType(dish.name)
+        }));
+
+        setMenuItems(transformedDishes);
+      } catch (error) {
+        console.error('Error fetching dishes:', error);
+        alert('Failed to load menu items. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDishes();
+  }, []);
 
   const addToCart = (item: MenuItem) => {
     setCart((prev) => {
@@ -111,8 +130,8 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
     try {
       const orderRequest = {
         customerName: name,
-        dishIds: cart.map(i => Number(i.id)), 
-        note: notes || null                 
+        dishIds: cart.map(i => Number(i.id)),
+        note: notes || null
       };
 
       console.log("Sending order request:", orderRequest);
@@ -165,15 +184,12 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
     }
   };
 
-
-  // Filter menu items by selected category
   const filteredMenuItems = menuItems.filter((item) => {
     if (!selectedCategory) return true;
-    
-    // Check if item's category matches OR if item's name contains the category name
+
     const categoryName = categories.find(c => c.id === selectedCategory)?.name.toLowerCase() || '';
     const itemNameLower = item.name.toLowerCase();
-    
+
     return item.category === selectedCategory || itemNameLower.includes(categoryName);
   });
 
@@ -183,7 +199,7 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
       <div className="bg-[#2a2a2a] px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button className="p-2 hover:bg-[#3a3a3a] rounded">
-            <Menu className="w-6 h-6" />
+            <Menu lassName="w-6 h-6" />
           </button>
           <div className="flex items-center gap-2 text-gray-300">
             <Clock className="w-5 h-5" />
@@ -222,9 +238,8 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`${category.color} text-black px-8 py-8 rounded-2xl text-lg relative ${
-                  selectedCategory === category.id ? 'ring-2 ring-white' : ''
-                }`}
+                className={`${category.color} text-black px-8 py-8 rounded-2xl text-lg relative ${selectedCategory === category.id ? 'ring-2 ring-white' : ''
+                  }`}
               >
                 {selectedCategory === category.id && (
                   <div className="absolute top-3 right-3 bg-green-500 w-6 h-6 rounded-full flex items-center justify-center">
@@ -237,50 +252,55 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
           </div>
 
           <div className="border-t border-gray-700 pt-8">
-            {/* Menu Items Grid */}
-            <div className="grid grid-cols-3 gap-5">
-              {filteredMenuItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-[#2a2a2a] rounded-xl p-5 flex items-center gap-5"
-                >
-                  <ImageWithFallback
-                    src={`https://images.unsplash.com/photo-${
-                      item.image === 'pizza'
+            {/* Loading State */}
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-xl text-gray-400">Loading menu items...</div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-5">
+                {filteredMenuItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-[#2a2a2a] rounded-xl p-5 flex items-center gap-5"
+                  >
+                    <ImageWithFallback
+                      src={item.image.startsWith('http') ? item.image : `https://images.unsplash.com/photo-${item.image === 'pizza'
                         ? '1565299624946-b28f40a0ae38'
                         : item.image === 'burger'
-                        ? '1568901346375-23c9450c58cd'
-                        : item.image === 'wings'
-                        ? '1608039829572-78524f79c4c7'
-                        : '1512621776951-a57141f2eefd'
-                    }?w=200&h=200&fit=crop`}
-                    alt={item.name}
-                    className="w-20 h-20 rounded-lg object-cover"
-                  />
-                  <div className="flex-1">
-                    <div className="text-base text-gray-300">{item.name}</div>
-                    <div className="text-base">${item.price}</div>
+                          ? '1568901346375-23c9450c58cd'
+                          : item.image === 'wings'
+                            ? '1608039829572-78524f79c4c7'
+                            : '1512621776951-a57141f2eefd'
+                        }?w=200&h=200&fit=crop`}
+                      alt={item.name}
+                      className="w-20 h-20 rounded-lg object-cover"
+                    />
+                    <div className="flex-1">
+                      <div className="text-base text-gray-300">{item.name}</div>
+                      <div className="text-base">${item.price}</div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedDish(item);
+                          setShowDishDetail(true);
+                        }}
+                        className="bg-[#7d5fb5] p-2 rounded-lg hover:bg-[#8d6fc5]"
+                      >
+                        <List className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => addToCart(item)}
+                        className="bg-[#7d5fb5] p-2 rounded-lg hover:bg-[#8d6fc5]"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedDish(item);
-                        setShowDishDetail(true);
-                      }}
-                      className="bg-[#7d5fb5] p-2 rounded-lg hover:bg-[#8d6fc5]"
-                    >
-                      <List className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => addToCart(item)}
-                      className="bg-[#7d5fb5] p-2 rounded-lg hover:bg-[#8d6fc5]"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -299,7 +319,7 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
                   <User className="w-4 h-4" />
                   <span className="text-sm">Walk-in Customer {'>'}</span>
                 </button>
-                <button 
+                <button
                   onClick={onViewHistory}
                   className="bg-[#3a3a3a] p-2 rounded-lg hover:bg-[#4a4a4a]"
                 >
@@ -331,15 +351,14 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center gap-4">
                     <ImageWithFallback
-                      src={`https://images.unsplash.com/photo-${
-                        item.image === 'pizza'
-                          ? '1565299624946-b28f40a0ae38'
-                          : item.image === 'burger'
+                      src={item.image.startsWith('http') ? item.image : `https://images.unsplash.com/photo-${item.image === 'pizza'
+                        ? '1565299624946-b28f40a0ae38'
+                        : item.image === 'burger'
                           ? '1568901346375-23c9450c58cd'
                           : item.image === 'wings'
-                          ? '1608039829572-78524f79c4c7'
-                          : '1512621776951-a57141f2eefd'
-                      }?w=100&h=100&fit=crop`}
+                            ? '1608039829572-78524f79c4c7'
+                            : '1512621776951-a57141f2eefd'
+                        }?w=100&h=100&fit=crop`}
                       alt={item.name}
                       className="w-16 h-16 rounded-lg object-cover"
                     />
