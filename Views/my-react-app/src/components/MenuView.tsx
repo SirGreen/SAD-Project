@@ -6,51 +6,49 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { SuccessModal } from './SuccessModal';
 import { NotesModal } from './NotesModal';
 
+interface ApiDish {
+  id: number;
+  name: string;
+  price: number;
+  isServing: boolean;
+  imageUrl: string;
+  category: string;
+  detail?: string;
+}
+
 interface MenuItem {
   id: string;
   name: string;
   price: number;
   image: string;
-  category: string;
+  apiCategory: string;
+  uiCategory: string;
+  isServing: boolean;
+  detail?: string;
 }
 
 interface CartItem extends MenuItem {
   quantity: number;
 }
 
-const categories = [
-  { id: 'pizza', name: 'Pizza', color: 'bg-[#b4f4d9]' },
-  { id: 'burger', name: 'Burger', color: 'bg-[#e4b4f4]' },
-  { id: 'fries', name: 'Fries', color: 'bg-[#b4f4d9]' },
-  { id: 'beverages', name: 'Beverages', color: 'bg-[#e4b4f4]' },
-  { id: 'wings', name: 'Wings', color: 'bg-[#f4b4e4]' },
-  { id: 'sandwiches', name: 'Sandwiches & Wraps', color: 'bg-[#b4f4d9]' },
-  { id: 'salads', name: 'Salads', color: 'bg-[#f4b4e4]' },
-  { id: 'icecream', name: 'Ice Cream', color: 'bg-[#b4f4d9]' },
+const uiCategories = [
+  { id: 'all', name: 'All Menu', color: 'bg-[#b4f4d9]' },
+  { id: 'mains', name: 'Mains & Grill', color: 'bg-[#e4b4f4]' },
+  { id: 'asian', name: 'Asian Bowls', color: 'bg-[#b4f4d9]' },
+  { id: 'bites', name: 'Bites & Sandwiches', color: 'bg-[#f4b4e4]' },
+  { id: 'greens', name: 'Healthy & Veg', color: 'bg-[#b4f4d9]' },
+  { id: 'dessert', name: 'Desserts', color: 'bg-[#e4b4f4]' },
 ];
 
-const getCategoryFromName = (dishName: string): string => {
-  const lowerName = dishName.toLowerCase();
-  if (lowerName.includes('pizza')) return 'pizza';
-  if (lowerName.includes('burger')) return 'burger';
-  if (lowerName.includes('wing')) return 'wings';
-  if (lowerName.includes('salad') || lowerName.includes('kale')) return 'salads';
-  if (lowerName.includes('fries') || lowerName.includes('fry') || lowerName.includes('potato')) return 'fries';
-  if (lowerName.includes('drink') || lowerName.includes('juice') || lowerName.includes('soda')) return 'beverages';
-  if (lowerName.includes('sandwich') || lowerName.includes('wrap') || lowerName.includes('banh mi') || lowerName.includes('slider')) return 'sandwiches';
-  if (lowerName.includes('ice cream') || lowerName.includes('cake') || lowerName.includes('dessert')) return 'icecream';
-  if (lowerName.includes('bowl') || lowerName.includes('rice') || lowerName.includes('ramen')) return 'pizza';
-  if (lowerName.includes('steak') || lowerName.includes('chicken') || lowerName.includes('shrimp') || lowerName.includes('cod') || lowerName.includes('brisket')) return 'burger';
-  return 'pizza';
-};
+const mapCategoryToUi = (apiCategory: string): string => {
+  const lowerCat = apiCategory.toLowerCase();
 
-const getImageType = (dishName: string): string => {
-  const lowerName = dishName.toLowerCase();
-  if (lowerName.includes('wing')) return 'wings';
-  if (lowerName.includes('salad') || lowerName.includes('kale')) return 'salad';
-  if (lowerName.includes('burger') || lowerName.includes('steak') || lowerName.includes('chicken')) return 'burger';
-  if (lowerName.includes('pizza')) return 'pizza';
-  return 'pizza';
+  if (['beef', 'pork', 'lamb', 'seafood'].includes(lowerCat)) return 'mains';
+  if (['bowls', 'rice', 'noodles'].includes(lowerCat)) return 'asian';
+  if (['small plates', 'sides', 'sandwiches'].includes(lowerCat)) return 'bites';
+  if (['salads', 'vegetarian', 'plant-based'].includes(lowerCat)) return 'greens';
+  if (['desserts'].includes(lowerCat)) return 'dessert';
+  return 'all';
 };
 
 interface MenuViewProps {
@@ -58,7 +56,7 @@ interface MenuViewProps {
 }
 
 export function MenuView({ onViewHistory }: MenuViewProps) {
-  const [selectedCategory, setSelectedCategory] = useState('pizza');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCheckout, setShowCheckout] = useState(false);
   const [customerName, setCustomerName] = useState('');
@@ -81,20 +79,21 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
           throw new Error('Failed to fetch dishes');
         }
 
-        const dishes = await response.json();
+        const dishes: ApiDish[] = await response.json();
 
-        const transformedDishes: MenuItem[] = dishes.map((dish: any) => ({
+        const transformedDishes: MenuItem[] = dishes.map((dish) => ({
           id: dish.id.toString(),
           name: dish.name,
           price: dish.price,
-          category: getCategoryFromName(dish.name),
-          image: dish.imageUrl || getImageType(dish.name)
+          image: dish.imageUrl,
+          apiCategory: dish.category,
+          uiCategory: mapCategoryToUi(dish.category),
+          isServing: dish.isServing
         }));
 
         setMenuItems(transformedDishes);
       } catch (error) {
         console.error('Error fetching dishes:', error);
-        alert('Failed to load menu items. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -184,13 +183,40 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
     }
   };
 
+  const handleViewDetail = async (id: string) => {
+    try {
+      // Gọi API lấy chi tiết món ăn theo ID
+      const res = await fetch(`http://localhost:5281/api/Dishes/${id}`);
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch dish detail');
+      }
+
+      const data: ApiDish = await res.json();
+
+      // Transform dữ liệu trả về để khớp với interface MenuItem
+      const detailItem: MenuItem = {
+        id: data.id.toString(),
+        name: data.name,
+        price: data.price,
+        image: data.imageUrl,
+        apiCategory: data.category,
+        uiCategory: mapCategoryToUi(data.category),
+        isServing: data.isServing,
+        detail: data.detail // [QUAN TRỌNG] Map dữ liệu detail từ API vào đây
+      };
+
+      setSelectedDish(detailItem);
+      setShowDishDetail(true);
+    } catch (error) {
+      console.error("Error fetching dish details:", error);
+      alert("Could not load dish details");
+    }
+  };
+
   const filteredMenuItems = menuItems.filter((item) => {
-    if (!selectedCategory) return true;
-
-    const categoryName = categories.find(c => c.id === selectedCategory)?.name.toLowerCase() || '';
-    const itemNameLower = item.name.toLowerCase();
-
-    return item.category === selectedCategory || itemNameLower.includes(categoryName);
+    if (selectedCategory === 'all') return true;
+    return item.uiCategory === selectedCategory;
   });
 
   return (
@@ -233,8 +259,8 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
         {/* Main Content */}
         <div className="flex-1 p-8 mr-[480px]">
           {/* Categories */}
-          <div className="grid grid-cols-4 gap-5 mb-8">
-            {categories.map((category) => (
+          <div className="grid grid-cols-3 gap-5 mb-8">
+            {uiCategories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
@@ -282,10 +308,7 @@ export function MenuView({ onViewHistory }: MenuViewProps) {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => {
-                          setSelectedDish(item);
-                          setShowDishDetail(true);
-                        }}
+                        onClick={() => handleViewDetail(item.id)}
                         className="bg-[#7d5fb5] p-2 rounded-lg hover:bg-[#8d6fc5]"
                       >
                         <List className="w-4 h-4" />
