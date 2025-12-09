@@ -1,0 +1,11 @@
+{
+  "name": "sad-project",
+  "private": true,
+  "scripts": {
+    "build": "cd Views/my-react-app && npm install",
+    "start": "concurrently \"dotnet run\" \"cd Views/my-react-app && npm run dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -6,8 +6,13 @@ Minimal ASP.NET Core MVC app that fronts mock menu and ordering endpoints for ea
 
 ```powershell
 cd d:\Code\BKU\BTL-SAD
-dotnet run
+npm run build   # (Build step)
+npm run start   # (Run step)
 ```
+
+By default:
+Backend runs on http://localhost:5153
+Frontend (React) runs on http://localhost:3000
 
 Use `--urls http://localhost:5153` to pin a port if needed.
 

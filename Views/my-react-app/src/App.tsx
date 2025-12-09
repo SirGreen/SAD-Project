@@ -1,10 +1,21 @@
-import { useState } from 'react';
 import { MenuView } from './components/MenuView';
 import { OrderHistory } from './components/OrderHistory';
 import { WelcomePage } from './components/WelcomePage';
+import { useState, useEffect } from 'react';
+
 
 export default function App() {
   const [currentView, setCurrentView] = useState<'welcome' | 'menu' | 'history'>('welcome');
+
+  // Chỉ xoá localStorage khi app được mở lại, KHÔNG xoá khi reload
+  useEffect(() => {
+    const sessionStarted = sessionStorage.getItem("session_active");
+
+    if (!sessionStarted) {
+      localStorage.removeItem("orderHistory");
+      sessionStorage.setItem("session_active", "true");
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] w-full overflow-x-auto">
